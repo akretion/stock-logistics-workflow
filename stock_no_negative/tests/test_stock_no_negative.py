@@ -6,6 +6,7 @@
 # © 2016 Serpent Consulting Services Pvt. Ltd. (<http://www.serpentcs.com>)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+
 from odoo.tests.common import TransactionCase
 from odoo.exceptions import ValidationError
 
@@ -19,13 +20,10 @@ class TestStockNoNegative(TransactionCase):
         self.picking_type_id = self.env.ref('stock.picking_type_out')
         self.location_id = self.env.ref('stock.stock_location_stock')
         self.location_dest_id = self.env.ref('stock.stock_location_customers')
-
         # Create product category
         self.product_ctg = self._create_product_category()
-
-        # Create a Product with real cost
+        # Create a Product
         self.product = self._create_product('test_product1')
-
         self._create_picking()
 
     def _create_product_category(self):
@@ -35,7 +33,6 @@ class TestStockNoNegative(TransactionCase):
         return product_ctg
 
     def _create_product(self, name):
-        """Create a Product with inventory valuation set to auto."""
         product = self.product_model.create({
             'name': name,
             'categ_id': self.product_ctg.id,
@@ -49,20 +46,23 @@ class TestStockNoNegative(TransactionCase):
             'move_type': 'direct',
             'location_id': self.location_id.id,
             'location_dest_id': self.location_dest_id.id
-            })
+        })
 
         self.stock_move = self.env['stock.move'].create({
-                                'name': 'Test Move',
-                                'product_id': self.product.id,
-                                'product_uom_qty': 100.0,
-                                'product_uom': self.product.uom_id.id,
-                                'picking_id': self.stock_picking.id,
-                                'state': 'draft',
-                                'location_id': self.location_id.id,
-                                'location_dest_id': self.location_dest_id.id
-                                })
+            'name': 'Test Move',
+            'product_id': self.product.id,
+            'product_uom_qty': 100.0,
+            'product_uom': self.product.uom_id.id,
+            'picking_id': self.stock_picking.id,
+            'state': 'draft',
+            'location_id': self.location_id.id,
+            'location_dest_id': self.location_dest_id.id
+        })
 
     def test_check_constrains(self):
+        """Assert that constraint is raised when user
+        tries to validate the stock operation which would
+        make the stock level of the product negative """
         self.stock_picking.action_confirm()
         self.stock_picking.action_assign()
         self.stock_picking.force_assign()
@@ -73,6 +73,8 @@ class TestStockNoNegative(TransactionCase):
             self.stock_immediate_transfer.process()
 
     def test_true_allow_negative_stock(self):
+        """Assert that negative stock levels are allowed when
+        the allow_negative_stock is set active in the product"""
         self.product.product_tmpl_id.write({'allow_negative_stock': True})
         self.stock_picking.action_confirm()
         self.stock_picking.action_assign()
