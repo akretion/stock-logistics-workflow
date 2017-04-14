@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# © 2015-2016 Akretion (http://www.akretion.com)
+# © 2015-2017 Akretion (http://www.akretion.com)
 # @author Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
@@ -28,7 +28,7 @@ class StockQuant(models.Model):
                 raise ValidationError(_(
                     "You cannot validate this stock operation because the "
                     "stock level of the product '%s'%s would become negative "
-                    "on the stock location '%s' and negative stock is not "
-                    "allowed for this product.") % (
-                        quant.product_id.name, msg_add,
+                    "(%s) on the stock location '%s' and negative stock is "
+                    "not allowed for this product.") % (
+                        quant.product_id.name, msg_add, quant.qty,
                         quant.location_id.complete_name))
