@@ -16,7 +16,8 @@ class StockPicking(models.Model):
     # Provide this field for backwards compatibility
     invoice_id = fields.Many2one(
         comodel_name='account.invoice', string='Invoice',
-        compute="_compute_invoice_id")
+        compute="_compute_invoice_id",
+        store=True, index=True)
 
     @api.multi
     @api.depends('invoice_ids')
