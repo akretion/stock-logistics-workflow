@@ -1,0 +1,70 @@
+<?xml version="1.0" ?>
+<odoo>
+
+    <record id="action_picking_test_tree" model="ir.actions.act_window">
+        <field name="name">Picking Exception Rules</field>
+        <field name="res_model">exception.rule</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="base_exception.view_exception_rule_tree"/>
+        <field name="domain">[('rule_group', '=', 'picking')]</field>
+        <field name="context">{'active_test': False, 'default_rule_group' : 'picking'}</field>
+    </record>
+
+    <menuitem
+        id="menu_picking_exception_parent"
+        action="action_picking_test_tree"
+        parent="delivery.menu_delivery"
+        sequence="30"
+        name="Exceptions Rules"
+    />
+
+
+
+    <record id="view_picking_form" model="ir.ui.view">
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <header position="after">
+                <div groups="picking.group_stock_user"
+                     class="alert alert-danger alert-dismissable" role="alert"
+                     style="margin-bottom:0px;" attrs="{'invisible':[('main_exception_id','=', False)]}">
+                    <bold>You have an outstanding
+                    exception to manage:
+                    <field name="main_exception_id" options='{"no_open": True}'/></bold>
+                </div>
+            </header>
+            <field name="move_type" position="after">
+                <field name="ignore_exception"/>
+            </field>
+            <xpath expr="//page[@name='extra']/group[last()]"
+                    position="after">
+                <separator string="Exceptions" colspan="2"/>
+                <field name="exception_ids" readonly="True"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="vpicktree" model="ir.ui.view">
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="after">
+                <field name="main_exception_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_picking_internal_search" model="ir.ui.view">
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_internal_search" />
+        <field name="arch" type="xml">
+            <filter name="activities_my" position="after">
+                <separator orientation="vertical"/>
+                <filter name="tofix" string="Blocked in Draft"
+                        domain="[('main_exception_id','!=',False)]"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

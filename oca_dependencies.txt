@@ -1,0 +1,1 @@
+multi-company https://github.com/akretion/multi-company 12-invoice-intercompany
