@@ -27,7 +27,6 @@
     'license': 'AGPL-3',
     'depends': [
         'stock',
-        'sale_order_dates'
     ],
     'data': [
         'stock_view.xml',
