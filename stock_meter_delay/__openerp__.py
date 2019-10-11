@@ -26,7 +26,7 @@
     'website': 'http://www.akretion.com/',
     'license': 'AGPL-3',
     'depends': [
-        'stock',
+        'sale_stock',
     ],
     'data': [
         'stock_view.xml',
