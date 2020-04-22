@@ -19,14 +19,12 @@ python:
 env:
   global:
     - VERSION="12.0" TESTS="0" LINT_CHECK="0"
-    - TRANSIFEX_USER='transbot@odoo-community.org'
-    - secure: Q3NYtZSe8DFS4/0JL8ki9NdIvP0NFY/ZRWtAQCDdcDdHKeSEjkCtf5btFuF0if1wa62UI4ZrDqT1/Fix2zAT5PW7mjAio0h2DYJAxBIZa7VIZEJC4tB93xgHq9SFByNGG5iE/zwXwTPLGpiGSnLgNgw0Zndv3ZTAJNhaxpKtqIo=
   matrix:
     - LINT_CHECK="1"
-    - TRANSIFEX="1"
-    - TESTS="1" ODOO_REPO="OCA/OCB"
-    - TESTS="1" ODOO_REPO="odoo/odoo"
-
+    # Exclusion because of conflict with odoo 'product_expiry' module
+    - TESTS="1" ODOO_REPO="odoo/odoo" MAKEPOT="1" EXCLUDE="product_expiry_simple"
+    - TESTS="1" ODOO_REPO="OCA/OCB" EXCLUDE="product_expiry_simple"
+    - TESTS="1" ODOO_REPO="OCA/OCB" EXCLUDE="product_expiry,stock_move_quick_lot"
 
 install:
   - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git $HOME/maintainer-quality-tools
