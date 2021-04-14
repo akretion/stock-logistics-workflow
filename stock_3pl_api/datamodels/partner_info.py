@@ -4,11 +4,10 @@
 from marshmallow import fields
 
 from odoo.addons.datamodel.core import Datamodel
-from odoo.addons.datamodel.fields import NestedModel
 
 
 class PartnerInfo(Datamodel):
-    _name = "partner.info"
+    _name = "3pl.partner.info"
 
     id = fields.Integer(required=True, allow_none=False)
     name = fields.String(required=True, allow_none=False)
@@ -16,7 +15,7 @@ class PartnerInfo(Datamodel):
     street2 = fields.String(required=False, allow_none=True)
     zip_code = fields.String(required=True, allow_none=False)
     city = fields.String(required=True, allow_none=False)
-    phone = fields.String(required=False, allow_none=True)
-    state = NestedModel("state.info")
-    country = NestedModel("country.info")
+    phone = fields.String(required=False)
+    state_name = fields.String(required=False)
+    country_name = fields.String(required=False)
     is_company = fields.Boolean(required=False)
