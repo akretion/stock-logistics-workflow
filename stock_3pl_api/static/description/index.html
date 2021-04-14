@@ -544,7 +544,7 @@ if you need.</p>
 but you should instead detail for each move, the list of packages,
 with the package ref, quantity, weight and tracking_url eventually.</p>
 <p>For instance::
-curl -X POST -H “API_KEY: 42D144F7BE780EBD” –header “Content-Type: application/json” –data ‘{“moves”:[{“id”:11, “packages”:[{“ref”: “box1”, “quantity”: 5}, {“ref”: “box2”, “quantity”: 10}]}]}’ “<a class="reference external" href="http://localhost:8069/stock-3pl-api/picking/1/done">http://localhost:8069/stock-3pl-api/picking/1/done</a>”</p>
+curl -X POST -H “API_KEY: 42D144F7BE780EBD” –header “Content-Type: application/json” –data ‘{“moves”:[{“id”:11, “lines”:[{“quantity”: 5, “package”: {“ref”: “box1”}}, {“quantity”: 10, “package”: {“ref”: “box2”}}]}]}’ “<a class="reference external" href="http://localhost:8069/stock-3pl-api/picking/1/done">http://localhost:8069/stock-3pl-api/picking/1/done</a>”</p>
 <p>TODO picture links</p>
 <p>And also you can use /update endpoint instead to update the picking detail without
 actually processing it yet. And you can process it later using /done.

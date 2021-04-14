@@ -165,7 +165,7 @@ with the package ref, quantity, weight and tracking_url eventually.
 
 For instance::
 curl -X POST -H "API_KEY: 42D144F7BE780EBD" --header "Content-Type: application/json" \
---data '{"moves":[{"id":11, "packages":[{"ref": "box1", "quantity": 5}, {"ref": "box2", "quantity": 10}]}]}' \
+--data '{"moves":[{"id":11, "lines":[{"quantity": 5, "package": {"ref": "box1"}}, {"quantity": 10, "package": {"ref": "box2"}}]}]}' \
 "http://localhost:8069/stock-3pl-api/picking/1/done"
 
 TODO picture links

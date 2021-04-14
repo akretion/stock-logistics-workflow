@@ -16,3 +16,4 @@ class MoveInfo(Datamodel):
     dest = fields.String(required=True, allow_none=False)
     state = fields.String(required=True, allow_none=False)
     id_3pl = fields.String(required=False)
+    lines = NestedModel("move.line.info", many=True)

@@ -121,39 +121,41 @@ class PickingService(Component):
     def _update_move(self, move_update_param):
         move = self.env["stock.move"].browse(move_update_param.id)
         move.move_line_ids.unlink()
-        if move_update_param.packages:
-            for package_update_param in move_update_param.packages:
-                package = self.env['stock.quant.package'].search(
-                    [('name', '=', package_update_param.ref)], limit=1
-                )  # (we have a unique name constraint)
-                if package:
-                    package.name = package_update_param.ref
-                    package.package_weight = package_update_param.weight
-                    package.tracking_url = package_update_param.tracking_url
-                else:
-                    package = self.env['stock.quant.package'].create(
-                        {
-                            'name': package_update_param.ref,
-                            'package_weight': package_update_param.weight,
-                            'tracking_url': package_update_param.tracking_url,
-                        }
-                    )
+
+        # moves with stock.move.line details
+        if move_update_param.lines:
+            for line_param in move_update_param.lines:
+                if line_param.package:
+                    package = self.env['stock.quant.package'].search(
+                        [('name', '=', line_param.package.ref)], limit=1
+                    )  # (we have a unique name constraint)
+                    if package:
+                        package.name = line_param.package.ref
+                        package.package_weight = line_param.package.weight
+                        package.tracking_url = line_param.package.tracking_url
+                    else:
+                        package = self.env['stock.quant.package'].create(
+                            {
+                                'name': line_param.package.ref,
+                                'package_weight': line_param.package.weight,
+                                'tracking_url': line_param.package.tracking_url,
+                            }
+                        )
                 self.env['stock.move.line'].create(
                     {
                         'move_id': move.id,
                         'picking_id': move.picking_id.id,
                         'product_id': move.product_id.id,
-                        'qty_done': package_update_param.quantity,
+                        'qty_done': line_param.quantity,
                         'product_uom_id': move.product_uom.id,
                         'location_id': move.location_id.id,
                         'location_dest_id': move.location_dest_id.id,
                         'result_package_id': package.id,
-                        # 'lot_id':
-                        # 'lot_name'
+                        # TODO search lot_id or create it
                     }
                 )
 
-        # stock.move.line with no package info:
+        # stock.move.line with no detailed info:
         elif move_update_param.quantity_done:
             self.env['stock.move.line'].create(
                 {
@@ -164,8 +166,6 @@ class PickingService(Component):
                     'product_uom_id': move.product_uom.id,
                     'location_id': move.location_id.id,
                     'location_dest_id': move.location_dest_id.id,
-                    # 'lot_id':
-                    # 'lot_name'
                 }
             )
 
@@ -223,7 +223,7 @@ class PickingService(Component):
         picking_info.state = picking.state
         picking_info.scheduled_date = picking.scheduled_date
         picking_info.id_3pl = picking.id_3pl
-        picking_info.move_ids_without_package = [
+        picking_info.moves = [
             self._to_move_info(m) for m in picking.move_ids_without_package
         ]
         if picking.backorder_id:
@@ -265,7 +265,22 @@ class PickingService(Component):
         move_info.origin = move.location_id.name
         move_info.dest = move.location_dest_id.name
         move_info.state = move.state
+        move_info.lines = [
+            self._to_move_line_info(l) for l in move.move_line_ids
+        ]
         return move_info
+
+    def _to_move_line_info(self, move_line):
+        MoveLineInfo = self.env.datamodels["move.line.info"]
+        line_info = MoveLineInfo(partial=True)
+        line_info.id = move_line.id
+        line_info.quantity = move_line.qty_done
+        line_info.reserved_quantity = move_line.product_uom_qty
+        line_info.lot = move_line.lot_name
+        if move_line.result_package_id:
+            line_info.package_ref = move_line.result_package_id.name
+            line_info.package_tracking_url = move_line.result_package_id.tracking_url
+        return line_info
 
     def _to_product_short_info(self, product):
         ProductShortInfo = self.env.datamodels["product.short.info"]

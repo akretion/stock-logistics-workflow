@@ -15,5 +15,5 @@ class MoveUpdateParam(Datamodel):
     date_done = fields.Date(required=False)
     id_3pl = fields.String(required=False)
     quantity_done = fields.Integer(required=False)
-    packages = NestedModel("package.update.param", many=True)
+    lines = NestedModel("move.line.update.param", many=True)
     exception = fields.String(required=False)
