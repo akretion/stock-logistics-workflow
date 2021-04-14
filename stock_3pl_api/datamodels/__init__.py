@@ -1,5 +1,3 @@
-from . import country_info
-from . import state_info
 from . import move_info
 from . import move_line_info
 from . import partner_info

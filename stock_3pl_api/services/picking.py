@@ -234,7 +234,7 @@ class PickingService(Component):
     def _to_partner_info(self, partner):
         if not partner:
             return None
-        PartnerInfo = self.env.datamodels["partner.info"]
+        PartnerInfo = self.env.datamodels["3pl.partner.info"]
         partner_info = PartnerInfo(partial=True)
         partner_info.id = partner.id
         partner_info.name = partner.name
@@ -244,13 +244,9 @@ class PickingService(Component):
         partner_info.city = partner.city
         partner_info.phone = partner.phone
         if partner.country_id:
-            partner_info.country = self.env.datamodels["country.info"](
-                id=partner.country_id.id, name=partner.country_id.name
-            )
+            partner_info.country_name = partner.country_id.name
         if partner.state_id:
-            partner_info.state = self.env.datamodels["state.info"](
-                id=partner.state_id.id, name=partner.state_id.name
-            )
+            partner_info.state_name = partner.state_id.name
         partner_info.is_company = partner.is_company
         return partner_info
 

@@ -10,7 +10,7 @@ class PickingInfo(Datamodel):
     id = fields.Integer(required=True, allow_none=False)
     name = fields.String(required=True, allow_none=False)
     origin = fields.String(required=False)
-    partner = NestedModel("partner.info", allow_none=True)
+    partner = NestedModel("3pl.partner.info", allow_none=True)
     picking_type_name = fields.String(required=False, allow_none=True)
     state = fields.String(required=True, allow_none=False)
     scheduled_date = fields.Date(required=True, allow_none=False)
