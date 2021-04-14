@@ -15,6 +15,6 @@ class PickingInfo(Datamodel):
     state = fields.String(required=True, allow_none=False)
     scheduled_date = fields.Date(required=True, allow_none=False)
     id_3pl = fields.String(required=True, allow_none=False)
-    move_ids_without_package = NestedModel("move.info", many=True)
+    moves = NestedModel("move.info", many=True)
     backorder_id = fields.Integer(required=False)
     backorder_ids = fields.List(fields.Integer())
