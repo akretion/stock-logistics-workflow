@@ -75,7 +75,7 @@ class PickingService(Component):
         return res
 
     @restapi.method(
-        [(["/<int:id>", "/<int:id>"], "GET")],
+        [(["/<int:id>"], "GET")],
         output_param=Datamodel("picking.info"),
         auth="api_key",
     )
@@ -222,7 +222,7 @@ class PickingService(Component):
         picking_info.picking_type_name = picking.picking_type_id.name
         picking_info.state = picking.state
         picking_info.scheduled_date = picking.scheduled_date
-        picking_info.id_3pl = picking.id_3pl
+        picking_info.id_3pl = picking.id_3pl or ""
         picking_info.moves = [
             self._to_move_info(m) for m in picking.move_ids_without_package
         ]
@@ -239,10 +239,10 @@ class PickingService(Component):
         partner_info.id = partner.id
         partner_info.name = partner.name
         partner_info.street = partner.street
-        partner_info.street2 = partner.street2
-        partner_info.zip_code = partner.zip
-        partner_info.city = partner.city
-        partner_info.phone = partner.phone
+        partner_info.street2 = partner.street2 or ""
+        partner_info.zip_code = partner.zip or ""
+        partner_info.city = partner.city or ""
+        partner_info.phone = partner.phone or ""
         if partner.country_id:
             partner_info.country_name = partner.country_id.name
         if partner.state_id:
@@ -272,7 +272,7 @@ class PickingService(Component):
         line_info.id = move_line.id
         line_info.quantity = move_line.qty_done
         line_info.reserved_quantity = move_line.product_uom_qty
-        line_info.lot = move_line.lot_name
+        line_info.lot = move_line.lot_name or ""
         if move_line.result_package_id:
             line_info.package_ref = move_line.result_package_id.name
             line_info.package_tracking_url = move_line.result_package_id.tracking_url
@@ -284,7 +284,7 @@ class PickingService(Component):
         product_short_info.id = product.id
         product_short_info.name = product.name
         product_short_info.code = product.default_code
-        product_short_info.barcode = product.barcode
+        product_short_info.barcode = product.barcode or ""
         product_short_info.weight = product.weight
         product_short_info.volume = product.volume
         return product_short_info
