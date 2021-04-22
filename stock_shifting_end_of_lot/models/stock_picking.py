@@ -78,17 +78,24 @@ class StockPicking(models.Model):
         domain = [("location_id", "child_of", self.location_id.id)]
         if len(prd_lot) > 1:
             domain.extend(["|"] * (len(prd_lot) - 1))
-        for domain_line in [
-            ["&", ("product_id", "=", prd.id), ("lot_id", "=", lot.id)]
-            for prd, lot in prd_lot.items()
-        ]:
-            domain.extend(domain_line)
-        # domain output example:
-        # [('location_id', 'child_of', 13),
-        #  '|', '|',
-        #  '&', ('product_id', '=', 18), ('lot_id', '=', 3),
-        #  '&', ('product_id', '=', 35), ('lot_id', '=', 2)]
-        #  '&', ('product_id', '=', 42), ('lot_id', '=', 4)]
+
+        for prd, lot in prd_lot.items():
+            if isinstance(lot, list):
+                # for each_lot in lot:
+                domain_extended_lot_list = [
+                    "&",
+                    ("product_id", "=", prd.id),
+                    ("lot_id", "in", lot.id),
+                ]
+                domain.extend(domain_extended_lot_list)
+            else:
+                domain_extended_lot_uniq = [
+                    "&",
+                    ("product_id", "=", prd.id),
+                    ("lot_id", "=", lot.id),
+                ]
+                domain.extend(domain_extended_lot_uniq)
+
         return [
             {"prd": x.product_id, "qty": x.quantity - x.reserved_quantity}
             for x in self.env["stock.quant"].search(domain)
