@@ -40,6 +40,10 @@ class PickingService(Component):
             domain = expression.AND(
                 [domain, [('picking_type_id', 'ilike', picking_search_param.picking_type_name)]]
             )
+        if picking_search_param.origin:
+            domain = expression.AND(
+                [domain, [('origin', 'ilike', picking_search_param.origin)]]
+            )
         if picking_search_param.states:
             if '|' in picking_search_param.states:
                 states = picking_search_param.states.split("|")
