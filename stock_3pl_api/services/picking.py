@@ -87,7 +87,7 @@ class PickingService(Component):
         return self._to_picking_info(picking)
 
     @restapi.method(
-        [(["/<int:id>/update"], "POST")],
+        [(["/<int:id>"], "POST")],
         input_param=restapi.Datamodel("picking.update.param"),
         output_param=restapi.Datamodel("picking.info"),
         auth="api_key",
