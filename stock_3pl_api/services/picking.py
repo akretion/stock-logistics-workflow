@@ -243,8 +243,9 @@ class PickingService(Component):
         partner_info.zip_code = partner.zip or ""
         partner_info.city = partner.city or ""
         partner_info.phone = partner.phone or ""
+        partner_info.mobile = partner.mobile or ""
         if partner.country_id:
-            partner_info.country_name = partner.country_id.name
+            partner_info.country_code = partner.country_id.code
         if partner.state_id:
             partner_info.state_name = partner.state_id.name
         partner_info.is_company = partner.is_company
