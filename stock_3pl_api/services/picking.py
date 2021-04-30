@@ -36,7 +36,11 @@ class PickingService(Component):
         ?picking_type_name=Delivery%20Orders&states=confirmed|assigned"
         """
         domain = []
-        if picking_search_param.picking_type_name:
+        if picking_search_param.picking_type_id:
+            domain = expression.AND(
+                [domain, [('picking_type_id', '=', picking_search_param.picking_type_id)]]
+            )
+        elif picking_search_param.picking_type_name:
             domain = expression.AND(
                 [domain, [('picking_type_id', 'ilike', picking_search_param.picking_type_name)]]
             )
