@@ -29,7 +29,13 @@ class ProductService(Component):
         res = []
         # TODO use location_name for context
         # see stock/models/stock_rule.py#L491
-        for p in self.env["product.product"].search(
+        if product_search_param.location_id:
+            ctx = {'location': product_search_param.location_id}
+        elif product_search_param.location_name:
+            ctx = {'location': product_search_param.location_name}
+        else:
+            ctx = {}
+        for p in self.env["product.product"].with_context(ctx).search(
             [('type', 'in', ['consu', 'product'])]
         ):
             res.append(self._to_product_info(p))
@@ -45,7 +51,13 @@ class ProductService(Component):
         """
         Get product information
         """
-        product = self.env["product.product"].browse(_id)
+        if product_search_param.location_id:
+            ctx = {'location': product_search_param.location_id}
+        elif product_search_param.location_name:
+            ctx = {'location': product_search_param.location_name}
+        else:
+            ctx = {}
+        product = self.env["product.product"].with_context(ctx).browse(_id)
         return self._to_product_info(product)
 
     def _to_product_info(self, product):

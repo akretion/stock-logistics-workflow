@@ -9,4 +9,5 @@ from odoo.addons.datamodel.core import Datamodel
 class ProductSearchParam(Datamodel):
     _name = "product.search.param"
 
-    location_name = fields.String(required=False)
+    location_name = fields.String()
+    location_id = fields.Integer()
