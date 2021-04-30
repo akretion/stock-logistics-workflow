@@ -28,6 +28,6 @@ and 4 main endpoints for consulting the pickings and processing them:
 * GET /stock-3pl-api/picking
 * GET /stock-3pl-api/picking/<id>
 * POST /stock-3pl-api/picking/<id>/done
-* POST /stock-3pl-api/picking/<id>/update
+* POST /stock-3pl-api/picking/<id>
 
 The usage of these endpoints is explained in the following sections.
