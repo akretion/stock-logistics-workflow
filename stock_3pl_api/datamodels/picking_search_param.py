@@ -10,6 +10,7 @@ class PickingSearchParam(Datamodel):
     _name = "picking.search.param"
 
     picking_type_name = fields.String()
+    picking_type_id = fields.String()
     states = fields.String()
     date_from = fields.Date()
     date_to = fields.Date()
