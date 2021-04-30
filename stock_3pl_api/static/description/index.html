@@ -393,7 +393,7 @@ advantage of this in the case of a multi-company set up.</p>
 <li>GET /stock-3pl-api/picking</li>
 <li>GET /stock-3pl-api/picking/&lt;id&gt;</li>
 <li>POST /stock-3pl-api/picking/&lt;id&gt;/done</li>
-<li>POST /stock-3pl-api/picking/&lt;id&gt;/update</li>
+<li>POST /stock-3pl-api/picking/&lt;id&gt;</li>
 </ul>
 <p>The usage of these endpoints is explained in the following sections.</p>
 <p><strong>Table of contents</strong></p>
@@ -442,7 +442,7 @@ that we can import with the 3PL API:</p>
 <dt>picking list endpoint::</dt>
 <dd>GET /picking</dd>
 <dt>Curl example::</dt>
-<dd>curl -v -H “API-KEY: 42D144F7BE780EBD” “<a class="reference external" href="http://localhost:8069/stock-3pl-api/picking">http://localhost:8069/stock-3pl-api/picking</a>?picking_type_name=Receipts&amp;states=confirmed|assigned”</dd>
+<dd>curl -H “API-KEY: 42D144F7BE780EBD” “<a class="reference external" href="http://localhost:8069/stock-3pl-api/picking">http://localhost:8069/stock-3pl-api/picking</a>?picking_type_name=Receipts&amp;states=confirmed|assigned”</dd>
 </dl>
 </div>
 <div class="section" id="stock-picking-filters">
@@ -492,7 +492,7 @@ If you want to inform you processed only 30 products, you can use:</p>
 <dt>set to done picking endpoint with detailed quantities::</dt>
 <dd>POST /stock-3pl-api/picking/&lt;id&gt;/done –data ‘{“moves”:[{“id”:&lt;move_id&gt;, “quantity_done”: &lt;move_qty&gt;}, …]}’</dd>
 <dt>Curl example::</dt>
-<dd>curl -X POST -v -H “API-KEY: 42D144F7BE780EBD”  –header “Content-Type: application/json” –data ‘{“moves”:[{“id”:36, “quantity_done”: 30}]}’ “<a class="reference external" href="http://localhost:8069/stock-3pl-api/picking/26/done">http://localhost:8069/stock-3pl-api/picking/26/done</a>”</dd>
+<dd>curl -X POST -H “API-KEY: 42D144F7BE780EBD”  –header “Content-Type: application/json” –data ‘{“moves”:[{“id”:36, “quantity_done”: 30}]}’ “<a class="reference external" href="http://localhost:8069/stock-3pl-api/picking/26/done">http://localhost:8069/stock-3pl-api/picking/26/done</a>”</dd>
 </dl>
 <p>See the API specification detail in Swagger or Postman for all the options.</p>
 <p>With such a command you will leave a backorder open for later reception,
@@ -507,9 +507,9 @@ processing the picking can be achieved using the update endpoint that
 accepts similar parameters as the the done endpoint.</p>
 <dl class="docutils">
 <dt>update endpoint::</dt>
-<dd>POST /stock-3pl-api/picking/&lt;id&gt;/update</dd>
+<dd>POST /stock-3pl-api/picking/&lt;id&gt;</dd>
 <dt>Curl example::</dt>
-<dd>curl -X POST -v -H “API-KEY: 42D144F7BE780EBD”  –header “Content-Type: application/json” –data ‘{“moves”:[{“id”:31, “quantity_done”: 30}]}’ “<a class="reference external" href="http://localhost:8069/stock-3pl-api/picking/21/update">http://localhost:8069/stock-3pl-api/picking/21/update</a>”</dd>
+<dd>curl -X POST -H “API-KEY: 42D144F7BE780EBD”  –header “Content-Type: application/json” –data ‘{“moves”:[{“id”:31, “quantity_done”: 30}]}’ “<a class="reference external" href="http://localhost:8069/stock-3pl-api/picking/21">http://localhost:8069/stock-3pl-api/picking/21</a>”</dd>
 </dl>
 <p>See the API specification detail for all the options.
 You can then use the “/POST done” endpoint to process the picking in this case
@@ -525,7 +525,7 @@ the packages and tracking information.</p>
 we can import in 3PL using the <strong>GET /picking endpoint</strong>.</p>
 <dl class="docutils">
 <dt>Curl example::</dt>
-<dd>curl -v -H “API-KEY: 42D144F7BE780EBD” “<a class="reference external" href="http://localhost:8069/stock-3pl-api/picking?picking_type_name=Delivery&amp;states=assigned">http://localhost:8069/stock-3pl-api/picking?picking_type_name=Delivery&amp;states=assigned</a>”</dd>
+<dd>curl -H “API-KEY: 42D144F7BE780EBD” “<a class="reference external" href="http://localhost:8069/stock-3pl-api/picking?picking_type_name=Delivery&amp;states=assigned">http://localhost:8069/stock-3pl-api/picking?picking_type_name=Delivery&amp;states=assigned</a>”</dd>
 </dl>
 <p><strong>filters</strong>: you can use the same filters as for the incoming pickings described
 in the previous section. Notice that for delivery we use <strong>picking_type_name=Delivery</strong>.
