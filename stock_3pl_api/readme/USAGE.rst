@@ -44,7 +44,7 @@ picking list endpoint::
   GET /picking
 
 Curl example::
-  curl -v -H "API-KEY: 42D144F7BE780EBD" "http://localhost:8069/stock-3pl-api/picking?picking_type_name=Receipts&states=confirmed|assigned"
+  curl -H "API-KEY: 42D144F7BE780EBD" "http://localhost:8069/stock-3pl-api/picking?picking_type_name=Receipts&states=confirmed|assigned"
 
 
 stock.picking filters
@@ -99,7 +99,7 @@ set to done picking endpoint with detailed quantities::
   POST /stock-3pl-api/picking/<id>/done --data '{"moves":[{"id":<move_id>, "quantity_done": <move_qty>}, ...]}'
 
 Curl example::
-  curl -X POST -v -H "API-KEY: 42D144F7BE780EBD"  --header "Content-Type: application/json" --data '{"moves":[{"id":36, "quantity_done": 30}]}' "http://localhost:8069/stock-3pl-api/picking/26/done"
+  curl -X POST -H "API-KEY: 42D144F7BE780EBD"  --header "Content-Type: application/json" --data '{"moves":[{"id":36, "quantity_done": 30}]}' "http://localhost:8069/stock-3pl-api/picking/26/done"
 
 See the API specification detail in Swagger or Postman for all the options.
 
@@ -117,10 +117,10 @@ processing the picking can be achieved using the update endpoint that
 accepts similar parameters as the the done endpoint.
 
 update endpoint::
-  POST /stock-3pl-api/picking/<id>/update
+  POST /stock-3pl-api/picking/<id>
 
 Curl example::
-  curl -X POST -v -H "API-KEY: 42D144F7BE780EBD"  --header "Content-Type: application/json" --data '{"moves":[{"id":31, "quantity_done": 30}]}' "http://localhost:8069/stock-3pl-api/picking/21/update"
+  curl -X POST -H "API-KEY: 42D144F7BE780EBD"  --header "Content-Type: application/json" --data '{"moves":[{"id":31, "quantity_done": 30}]}' "http://localhost:8069/stock-3pl-api/picking/21"
 
 See the API specification detail for all the options.
 You can then use the "/POST done" endpoint to process the picking in this case
@@ -138,7 +138,7 @@ the validation of sale orders in Odoo will create outgoing stock.picking that
 we can import in 3PL using the **GET /picking endpoint**.
 
 Curl example::
-  curl -v -H "API-KEY: 42D144F7BE780EBD" "http://localhost:8069/stock-3pl-api/picking?picking_type_name=Delivery&states=assigned"
+  curl -H "API-KEY: 42D144F7BE780EBD" "http://localhost:8069/stock-3pl-api/picking?picking_type_name=Delivery&states=assigned"
 
 **filters**: you can use the same filters as for the incoming pickings described
 in the previous section. Notice that for delivery we use **picking_type_name=Delivery**.
