@@ -10,7 +10,7 @@
     'author': 'Akretion,Odoo Community Association (OCA)',
     "maintainers": ["rvalyi"],
     'depends': [
-        'stock',
+        'delivery',
         'base_rest',
         'base_rest_datamodel',
         'auth_api_key',
