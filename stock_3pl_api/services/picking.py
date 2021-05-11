@@ -139,13 +139,13 @@ class PickingService(Component):
                     )  # (we have a unique name constraint)
                     if package:
                         package.name = line_param.package.ref
-                        package.package_weight = line_param.package.weight
+                        package.shipping_weight = line_param.package.weight
                         package.tracking_url = line_param.package.tracking_url
                     else:
                         package = self.env['stock.quant.package'].create(
                             {
                                 'name': line_param.package.ref,
-                                'package_weight': line_param.package.weight,
+                                'shipping_weight': line_param.package.weight,
                                 'tracking_url': line_param.package.tracking_url,
                             }
                         )
