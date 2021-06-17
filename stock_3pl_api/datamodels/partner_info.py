@@ -11,6 +11,7 @@ class PartnerInfo(Datamodel):
 
     id = fields.Integer(required=True, allow_none=False)
     name = fields.String(required=True, allow_none=False)
+    email = fields.String()
     street = fields.String(required=True, allow_none=False)
     street2 = fields.String(required=False, allow_none=True)
     zip_code = fields.String(required=True, allow_none=False)

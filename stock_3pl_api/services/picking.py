@@ -149,6 +149,8 @@ class PickingService(Component):
                                 'tracking_url': line_param.package.tracking_url,
                             }
                         )
+                else:
+                    package = None
                 self.env['stock.move.line'].create(
                     {
                         'move_id': move.id,
@@ -158,7 +160,7 @@ class PickingService(Component):
                         'product_uom_id': move.product_uom.id,
                         'location_id': move.location_id.id,
                         'location_dest_id': move.location_dest_id.id,
-                        'result_package_id': package.id,
+                        'result_package_id': package.id if package else False,
                         # TODO search lot_id or create it
                     }
                 )
@@ -246,7 +248,8 @@ class PickingService(Component):
         partner_info = PartnerInfo(partial=True)
         partner_info.id = partner.id
         partner_info.name = partner.name
-        partner_info.street = partner.street
+        partner_info.email = partner.email or ""
+        partner_info.street = partner.street or ""
         partner_info.street2 = partner.street2 or ""
         partner_info.zip_code = partner.zip or ""
         partner_info.city = partner.city or ""
