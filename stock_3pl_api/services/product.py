@@ -1,6 +1,7 @@
 from odoo.addons.base_rest import restapi
 from odoo.addons.base_rest_datamodel.restapi import Datamodel
 from odoo.addons.component.core import Component
+from odoo.exceptions import UserError, ValidationError
 
 
 class ProductService(Component):
@@ -27,12 +28,13 @@ class ProductService(Component):
         List products and their inventory data
         """
         res = []
-        # TODO use location_name for context
-        # see stock/models/stock_rule.py#L491
         if product_search_param.location_id:
             ctx = {'location': product_search_param.location_id}
         elif product_search_param.location_name:
-            ctx = {'location': product_search_param.location_name}
+            location_id = self.env["stock.location"].search(
+                [('name', 'ilike', product_search_param.location_name)], limit=1
+            )
+            ctx = {'location': location_id}
         else:
             ctx = {}
         for p in self.env["product.product"].with_context(ctx).search(
@@ -42,7 +44,7 @@ class ProductService(Component):
         return res
 
     @restapi.method(
-        [(["/<int:id>", "/<int:id>"], "GET")],
+        [(["/<int:id>"], "GET")],
         input_param=Datamodel("product.search.param"),
         output_param=Datamodel("product.info"),
         auth="api_key",
@@ -54,9 +56,44 @@ class ProductService(Component):
         if product_search_param.location_id:
             ctx = {'location': product_search_param.location_id}
         elif product_search_param.location_name:
-            ctx = {'location': product_search_param.location_name}
+            location_id = self.env["stock.location"].search(
+                [('name', 'ilike', product_search_param.location_name)], limit=1
+            )
+            ctx = {'location': location_id}
         else:
             ctx = {}
+        product = self.env["product.product"].with_context(ctx).browse(_id)
+        return self._to_product_info(product)
+
+    @restapi.method(
+        [(["/<int:id>"], "POST")],
+        input_param=Datamodel("product.update.param"),
+        output_param=Datamodel("product.info"),
+        auth="api_key",
+    )
+    def update(self, _id, product_update_param):
+        """
+        Update product information (stock)
+        """
+        if product_update_param.location_id:
+            location_id = product_update_param.location_id
+            ctx = {'location': product_update_param.location_id}
+        elif product_update_param.location_name:
+            location = self.env["stock.location"].search(
+                [('name', 'ilike', product_update_param.location_name)], limit=1
+            )
+            location_id = location.id
+            ctx = {'location': location_id}
+        else:
+            raise ValidationError("location_id or location_name is required!")
+        product_tmpl_id = self.env['product.product'].browse(_id).product_tmpl_id.id
+        update_wizard = self.env["stock.change.product.qty"].create({
+            'product_id': _id,
+            'product_tmpl_id': product_tmpl_id,
+            'location_id': location_id,
+            'new_quantity': product_update_param.new_quantity,
+        })
+        update_wizard.change_product_qty()
         product = self.env["product.product"].with_context(ctx).browse(_id)
         return self._to_product_info(product)
 
