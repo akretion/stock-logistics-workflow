@@ -4,9 +4,11 @@ Catalog and Inventory
 First the 3PL partner can import the catalog and inventory from Odoo with the
 
 Product list endpoint::
+
   GET /stock-3pl-api/product
 
 Curl example::
+
   curl -H "API-KEY: 42D144F7BE780EBD"  http://localhost:8069/stock-3pl-api/product
 
 The 3PL partner can typically use this to ensure that the Odoo stock levels
@@ -15,14 +17,23 @@ are consistent with its own inventory and warn you otherwise.
 TODO what about an API point to warn Odoo about a stock level error?
 
 You can also consult a specific product with its id::
+
   GET /stock-3pl-api/product/<id>
 
 Curl example::
+
   curl -H "API-KEY: 42D144F7BE780EBD"  http://localhost:8069/stock-3pl-api/product/10
 
-You can also specify a specific stock_location_name to get the stock levels at
+You can also specify a specific location_name or location_id to get the stock levels at
 a specific location in case you have a more sophisticated multi-locations usage.
-TODO document.
+
+Finally, you can also pass an absolute new_quantity or relative delta_quantity
+to update a product quantity from the API, for instance to inform some inventory
+loss.
+
+For this use the product update endpoint::
+
+  POST /stock-3pl-api/product/<id>
 
 
 Purchase Orders / Incoming Pickings
@@ -41,9 +52,11 @@ Getting the list of receptions
 ==============================
 
 picking list endpoint::
+
   GET /picking
 
 Curl example::
+
   curl -H "API-KEY: 42D144F7BE780EBD" "http://localhost:8069/stock-3pl-api/picking?picking_type_name=Receipts&states=confirmed|assigned"
 
 
@@ -59,6 +72,7 @@ You can filter these incoming pickings using the following parameters:
 * id_3pl: use false to filter only the stock pickings with no id_3pl yet. Eventually you will later write an id_3pl in some pickings to help you filter
 
 You can also consult a specific picking with::
+
   GET /stock-3pl-api/picking/<id>
 
 
@@ -69,6 +83,7 @@ When the products are received, you can simply set the picking to the 'done'
 state with all the planed quantities with the:
 
 set to done picking endpoint::
+
   POST /stock-3pl-api/picking/<id>/done?force_reserved_quantities=true
 
 If you don't specify force_reserved_quantities=true, only the reserved quantities
@@ -76,6 +91,7 @@ will be processed, see later how you can inform these reserved quantities with
 the API.
 
 Curl example::
+
   curl -X POST -H "API-KEY: 42D144F7BE780EBD" http://localhost:8069/stock-3pl-api/picking/9/done?force_reserved_quantities=true
 
 You can ensure in the response that the picking state is 'done'.
@@ -90,15 +106,18 @@ planed moves is called 'move_ids_without_package'.
 You can consult these move ids either from the picking list either with:
 
 The picking detail endpoint::
+
   GET /stock-3pl-api/picking/<id>
 
 So suppose you you have a single move an id 36 and with a planed move quantity of 35.
 If you want to inform you processed only 30 products, you can use:
 
 set to done picking endpoint with detailed quantities::
+
   POST /stock-3pl-api/picking/<id>/done --data '{"moves":[{"id":<move_id>, "quantity_done": <move_qty>}, ...]}'
 
 Curl example::
+
   curl -X POST -H "API-KEY: 42D144F7BE780EBD"  --header "Content-Type: application/json" --data '{"moves":[{"id":36, "quantity_done": 30}]}' "http://localhost:8069/stock-3pl-api/picking/26/done"
 
 See the API specification detail in Swagger or Postman for all the options.
@@ -117,9 +136,11 @@ processing the picking can be achieved using the update endpoint that
 accepts similar parameters as the the done endpoint.
 
 update endpoint::
+
   POST /stock-3pl-api/picking/<id>
 
 Curl example::
+
   curl -X POST -H "API-KEY: 42D144F7BE780EBD"  --header "Content-Type: application/json" --data '{"moves":[{"id":31, "quantity_done": 30}]}' "http://localhost:8069/stock-3pl-api/picking/21"
 
 See the API specification detail for all the options.
@@ -138,6 +159,7 @@ the validation of sale orders in Odoo will create outgoing stock.picking that
 we can import in 3PL using the **GET /picking endpoint**.
 
 Curl example::
+
   curl -H "API-KEY: 42D144F7BE780EBD" "http://localhost:8069/stock-3pl-api/picking?picking_type_name=Delivery&states=assigned"
 
 **filters**: you can use the same filters as for the incoming pickings described
@@ -164,6 +186,7 @@ but you should instead detail for each move, the list of packages,
 with the package ref, quantity, weight and tracking_url eventually.
 
 For instance::
+
 curl -X POST -H "API_KEY: 42D144F7BE780EBD" --header "Content-Type: application/json" \
 --data '{"moves":[{"id":11, "lines":[{"quantity": 5, "package": {"ref": "box1"}}, {"quantity": 10, "package": {"ref": "box2"}}]}]}' \
 "http://localhost:8069/stock-3pl-api/picking/1/done"

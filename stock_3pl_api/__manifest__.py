@@ -8,6 +8,7 @@
     'version': '12.0.1.0.0',
     'license': 'AGPL-3',
     'author': 'Akretion,Odoo Community Association (OCA)',
+    "website": "https://github.com/OCA/stock-logistics-warehouse",
     "maintainers": ["rvalyi"],
     'depends': [
         'delivery',
@@ -20,4 +21,5 @@
     'demo': [
         "demo/auth_api_key_demo.xml",
     ],
+    "external_dependencies": {"python": ["marshmallow", "marshmallow_objects"]},
 }
