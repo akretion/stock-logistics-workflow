@@ -8,7 +8,7 @@ class StockQuantPackage(models.Model):
 
     # tracking_ref = fields.Char(string='Tracking Reference', copy=False)
     # we assume the tracking ref is set in the name directly
-    tracking_url = fields.Char(string='Tracking URL', copy=False)
+    tracking_url = fields.Char(string="Tracking URL", copy=False)
 
     # ripped from OCA/wms/shopfloor
     @api.constrains("name")

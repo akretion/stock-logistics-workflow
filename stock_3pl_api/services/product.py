@@ -1,8 +1,9 @@
+from odoo import _
+from odoo.exceptions import ValidationError
+
 from odoo.addons.base_rest import restapi
 from odoo.addons.base_rest_datamodel.restapi import Datamodel
 from odoo.addons.component.core import Component
-from odoo import _
-from odoo.exceptions import UserError, ValidationError
 
 
 class ProductService(Component):
@@ -12,10 +13,11 @@ class ProductService(Component):
     curl -H "api_key: key1"  http://localhost:8069/stock_3pl_api/product
     curl -H "api_key: key1"  http://localhost:8069/stock_3pl_api/product/13
     """
-    _inherit = 'base.stock.3pl.api.service'
-    _name = 'base.stock.3pl.api.product'
-    _usage = 'product'
-    _collection = 'stock.3pl.api.service'
+
+    _inherit = "base.stock.3pl.api.service"
+    _name = "base.stock.3pl.api.product"
+    _usage = "product"
+    _collection = "stock.3pl.api.service"
     _description = "Export the product catalog with stock levels"
 
     @restapi.method(
@@ -30,16 +32,18 @@ class ProductService(Component):
         """
         res = []
         if product_search_param.location_id:
-            ctx = {'location': product_search_param.location_id}
+            ctx = {"location": product_search_param.location_id}
         elif product_search_param.location_name:
             location_id = self.env["stock.location"].search(
-                [('name', 'ilike', product_search_param.location_name)], limit=1
+                [("name", "ilike", product_search_param.location_name)], limit=1
             )
-            ctx = {'location': location_id}
+            ctx = {"location": location_id}
         else:
             ctx = {}
-        for p in self.env["product.product"].with_context(ctx).search(
-            [('type', 'in', ['consu', 'product'])]
+        for p in (
+            self.env["product.product"]
+            .with_context(ctx)
+            .search([("type", "in", ["consu", "product"])])
         ):
             res.append(self._to_product_info(p))
         return res
@@ -55,12 +59,12 @@ class ProductService(Component):
         Get product information
         """
         if product_search_param.location_id:
-            ctx = {'location': product_search_param.location_id}
+            ctx = {"location": product_search_param.location_id}
         elif product_search_param.location_name:
             location_id = self.env["stock.location"].search(
-                [('name', 'ilike', product_search_param.location_name)], limit=1
+                [("name", "ilike", product_search_param.location_name)], limit=1
             )
-            ctx = {'location': location_id}
+            ctx = {"location": location_id}
         else:
             ctx = {}
         product = self.env["product.product"].with_context(ctx).browse(_id)
@@ -78,13 +82,13 @@ class ProductService(Component):
         """
         if product_update_param.location_id:
             location_id = product_update_param.location_id
-            ctx = {'location': product_update_param.location_id}
+            ctx = {"location": product_update_param.location_id}
         elif product_update_param.location_name:
             location = self.env["stock.location"].search(
-                [('name', 'ilike', product_update_param.location_name)], limit=1
+                [("name", "ilike", product_update_param.location_name)], limit=1
             )
             location_id = location.id
-            ctx = {'location': location_id}
+            ctx = {"location": location_id}
         else:
             raise ValidationError(_("location_id or location_name is required!"))
         if product_update_param.new_quantity:
@@ -94,13 +98,15 @@ class ProductService(Component):
             new_qty = product.qty_available + product_update_param.delta_quantity
         else:
             raise ValidationError(_("new_quantity or delta_quantity is required!"))
-        product_tmpl_id = self.env['product.product'].browse(_id).product_tmpl_id.id
-        update_wizard = self.env["stock.change.product.qty"].create({
-            'product_id': _id,
-            'product_tmpl_id': product_tmpl_id,
-            'location_id': location_id,
-            'new_quantity': new_qty,
-        })
+        product_tmpl_id = self.env["product.product"].browse(_id).product_tmpl_id.id
+        update_wizard = self.env["stock.change.product.qty"].create(
+            {
+                "product_id": _id,
+                "product_tmpl_id": product_tmpl_id,
+                "location_id": location_id,
+                "new_quantity": new_qty,
+            }
+        )
         update_wizard.change_product_qty()
         product = self.env["product.product"].with_context(ctx).browse(_id)
         return self._to_product_info(product)
