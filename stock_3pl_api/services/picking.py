@@ -214,7 +214,6 @@ class PickingService(Component):
             backorder = self.env['stock.picking'].search(
                 [('backorder_id', '=', picking.id)],
             )
-            print("cancelling", backorder)
             backorder.action_cancel()
             picking.message_post(
                 body=_("Back order <em>%s</em> <b>cancelled</b>.")
@@ -274,7 +273,7 @@ class PickingService(Component):
         move_info.dest = move.location_dest_id.name
         move_info.state = move.state
         move_info.lines = [
-            self._to_move_line_info(l) for l in move.move_line_ids
+            self._to_move_line_info(line) for line in move.move_line_ids
         ]
         return move_info
 
