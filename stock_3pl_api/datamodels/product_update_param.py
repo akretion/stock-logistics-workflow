@@ -11,4 +11,5 @@ class ProductUpdateParam(Datamodel):
 
     location_name = fields.String()
     location_id = fields.Integer()
-    new_quantity = fields.Float(required=True)
+    new_quantity = fields.Float()
+    delta_quantity = fields.Float()

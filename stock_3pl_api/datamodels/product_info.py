@@ -17,5 +17,6 @@ class ProductInfo(Datamodel):
     uom_name = fields.String(required=True, allow_none=False)
     tracking_type = fields.String(required=True, allow_none=False)
     quantity = fields.Float(required=True, allow_none=False)
-    incoming_quantity = fields.Float(required=True, allow_none=False)
-    outgoing_quantity = fields.Float(required=True, allow_none=False)
+    available_quantity = fields.Float(required=True)
+    incoming_quantity = fields.Float(required=True)
+    outgoing_quantity = fields.Float(required=True)
