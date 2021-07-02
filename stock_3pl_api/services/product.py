@@ -119,8 +119,8 @@ class ProductService(Component):
 
         product_info.name = product.name
         product_info.code = product.default_code
-        product_info.description = product.description
-        product_info.barcode = product.barcode
+        product_info.description = product.description or ""
+        product_info.barcode = product.barcode or ""
         product_info.weight = product.weight
         product_info.volume = product.volume
         product_info.category_name = product.categ_id.name
