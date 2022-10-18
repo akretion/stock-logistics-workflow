@@ -8,6 +8,15 @@
             <xpath expr="//field[@name='move_line_ids_without_package']/tree/field[@name='lot_name']" position="after">
                 <field name="expiry_date" groups="stock.group_production_lot" attrs="{'column_invisible': [('parent.show_lots_text', '=', False)], 'invisible': [('lots_visible', '=', False)]}"/>
             </xpath>
+            <field name="show_mark_as_todo" position="after">
+                <field name="show_expiry_warning" invisible="1"/>
+            </field>
+            <xpath expr="/form/sheet" position="before">
+                <div class="alert alert-warning" role="alert"
+                        attrs="{'invisible': [('show_expiry_warning', '=', False)]}">
+                        One or several products have <b>expired</b> lots
+                </div>
+            </xpath>
         </field>
     </record>
     <record id="view_stock_move_line_operation_tree" model="ir.ui.view">
