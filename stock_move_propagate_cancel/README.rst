@@ -25,11 +25,11 @@ Stock Move Propagate Cancel
 
 |badge1| |badge2| |badge3| |badge4| |badge5| 
 
-This module improve the stock cancel propagation of Odoo stock module.
+This module improves the stock move cancel propagation of Odoo stock module.
 In base stock module, a cancelation of destination stock move is only made if all previous stock moves are canceled.
-This modules aims to propagate the cancelation even if only part of the previous move is canceled.
+This modules aims to propagate the cancelation even if only part of the previous moves is canceled.
 
-In case of chained stock moves, if you transfer a stock move and cancel the backorder, the destination stock move will be splitted and partially canceled to match what has really been transfered.
+In case of chained stock moves, if you partially transfer a stock move and cancel the backorder, the destination stock move will be splitted and partially canceled to match what has really been transfered.
 
 **Table of contents**
 
@@ -47,10 +47,10 @@ We can also have scenarios where a stock move have multiple destination moves, e
 For all these cases the module does nothing to avoid making a mistake.
 
 The module works with the following rules :
-In case of a cancelation of a stock move with the cancelation propagation option activated, odoo find the quantity of the siblings move which has not been canceled (either it is done or waiting to be processed).
-Then, it wil only propagate the cancelation on the destination moves if those keep a quantity of products done or to do equal or bigger than the previous moves.
+In case of a cancelation of a stock move with the cancelation propagation option activated, odoo finds the quantity of the siblings move which has not been canceled (either it is done or waiting to be processed).
+Then, it will only propagate the cancelation on the destination moves if the quantity of those moves (done or to do) is equal or bigger than the previous moves.
 
-So, in these situations, the module don't cancel anything rather than risking to cancel the wrong destinaton moves/quantities.
+So, in these situations, the module doesn't cancel anything rather than risking to cancel the wrong destinaton moves/quantities.
 
 Bug Tracker
 ===========
