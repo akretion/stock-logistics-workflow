@@ -5,6 +5,7 @@
 from odoo_test_helper import FakeModelLoader
 
 from odoo.tests.common import TransactionCase
+from odoo import fields
 
 
 class TestProductMassAddition(TransactionCase):
@@ -48,26 +49,25 @@ class TestProductMassAddition(TransactionCase):
     def test_quick_should_not_write_on_product(self):
         """Using quick magic fields shouldn't write on product's metadata"""
         user_demo = self.env.ref("base.user_demo")
-        self.product.write_uid = user_demo
-        self.env["base"].flush_model()
-        self.assertEqual(self.product.write_uid, user_demo)
+        old = self.product.write_date
         # Case 1: Updating qty_to_process shouldn't write on products
         self.product.qty_to_process = 1.0
         self.env["base"].flush_model()
-        self.assertEqual(self.product.write_uid, user_demo)
+        self.assertEqual(self.product.write_date, old)
+        old = self.product.write_date
         # Case 2: Updating quick_uom_id shouldn't write on products
         self.product.quick_uom_id = self.env.ref("uom.product_uom_categ_unit").uom_ids[
             1
         ]
         self.env["base"].flush_model()
-        self.assertEqual(self.product.write_uid, user_demo)
+        self.assertEqual(self.product.write_date, old)
 
     def test_quick_should_write_on_product(self):
         """Updating fields that are not magic fields should update
         product metadata"""
         # Change the product write_uid for testing
         user_demo = self.env.ref("base.user_demo")
-        self.product.write_uid = user_demo
+        old = self.product.write_date
         self.env["base"].flush_model()
         self.assertEqual(self.product.write_uid, user_demo)
         # Case 1: Updating name field should write on product's metadata

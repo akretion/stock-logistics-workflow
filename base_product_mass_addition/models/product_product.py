@@ -26,7 +26,6 @@ class ProductProduct(models.Model):
         domain="[('category_id', '=', quick_uom_category_id)]",
         compute="_compute_quick_uom_id",
         inverse="_inverse_set_process_qty",
-        store=True,
     )
 
     def _inverse_set_process_qty(self):
@@ -59,8 +58,8 @@ class ProductProduct(models.Model):
             cr = self.env.cr
             Model = self._build_model(self.pool, cr)
             Model._auto = False
-            Model._log_access = set(list([]))
-        res = super(ProductProduct, self).write(vals)
+            Model._log_access = set()
+        res = super().write(vals)
         if not self._log_access:
             cr = self.env.cr
             Model = self._build_model(self.pool, cr)
