@@ -110,7 +110,25 @@ class StockMove(models.Model):
 
     def write(self, vals):
         if "restrict_lot_id" not in vals:
-            return super().write(vals)
+            res = super().write(vals)
+            if "move_dest_ids" in vals or "move_orig_ids" in vals:
+                for move in self:
+                    chained_moves = (
+                            move | move.get_all_dest_moves() | move.get_all_orig_moves()
+                    )
+                    if not move.restrict_lot_id and move.state not in ["done", "cancel"]:
+                        # update restrict_lot_id on current move from chained_moves
+                        if chained_moves.restrict_lot_id:
+                            move.restrict_lot_id = chained_moves.restrict_lot_id[0]
+                    else:
+                        # update chained_moves
+                        to_update_move = chained_moves.filtered(
+                            lambda sm: sm.state not in ['done', 'cancel'] and
+                                       sm.restrict_lot_id != move.restrict_lot_id
+                        )
+                        to_update_move.restrict_lot_id = move.restrict_lot_id
+            else:
+                return res
         else:
             restrict_lot_id = vals.pop("restrict_lot_id")
             restrict_lot = self.env["stock.lot"].browse(restrict_lot_id)

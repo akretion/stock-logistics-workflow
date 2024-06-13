@@ -46,7 +46,7 @@ class TestRestrictLot(TransactionCase):
         )
         return move, new_lot
 
-    def _create_move_dest(self):
+    def _create_move_dest(self, with_lot = True):
         return self.env["stock.move"].create(
             {
                 "product_id": self.product.id,
@@ -60,7 +60,7 @@ class TestRestrictLot(TransactionCase):
                 "warehouse_id": self.warehouse.id,
                 "route_ids": [(6, 0, self.warehouse.delivery_route_id.ids)],
                 "state": "waiting",
-                "restrict_lot_id": self.lot.id,
+                "restrict_lot_id": self.lot.id if with_lot else False,
             }
         )
 
@@ -278,12 +278,32 @@ class TestRestrictLot(TransactionCase):
         move.restrict_lot_id = new_lot.id
         self.assertEqual(move_dest.restrict_lot_id, new_lot)
 
+    def test_restrict_lot_propagation_dest_moves_without_lot(self):
+        move, new_lot = self._create_move_with_lot()
+        move_dest = self._create_move_dest(False)
+        move.move_dest_ids = [(4, move_dest.id)]
+        chained_moves = (
+                move | move.get_all_dest_moves() | move.get_all_orig_moves()
+        )
+        self.assertEqual(chained_moves.restrict_lot_id, self.lot)
+        self.assertEqual(move_dest.restrict_lot_id, self.lot)
+        move.restrict_lot_id = new_lot.id
+        self.assertEqual(move_dest.restrict_lot_id, new_lot)
+
     def test_restrict_lot_propagation_origin_moves(self):
         move, new_lot = self._create_move_with_lot()
         orig_move = move.move_orig_ids
         self.assertEqual(orig_move.restrict_lot_id, self.lot)
         move.restrict_lot_id = new_lot.id
         self.assertEqual(orig_move.restrict_lot_id, new_lot)
+
+    def test_restrict_lot_propagation_orig_moves_without_lot(self):
+        move, new_lot = self._create_move_with_lot()
+        move_dest = self._create_move_dest(False)
+        move_dest.move_orig_ids = [(4, move.id)]
+        self.assertEqual(move_dest.restrict_lot_id, self.lot)
+        move.restrict_lot_id = new_lot.id
+        self.assertEqual(move_dest.restrict_lot_id, new_lot)
 
     def test_restrict_lot_propagation_origin_and_dest_moves(self):
         move, new_lot = self._create_move_with_lot()
