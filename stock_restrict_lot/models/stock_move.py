@@ -91,15 +91,25 @@ class StockMove(models.Model):
             vals_list[0]["restrict_lot_id"] = self.restrict_lot_id.id
         return vals_list
 
+    # Same as _rollup_move_origs but also for "done" moves.
+    def _rollup_not_cancelled_move_origs(self, seen=False):
+        if not seen:
+            seen = OrderedSet()
+        for dst in self.move_orig_ids:
+            if dst.id not in seen and dst.state != "cancel":
+                seen.add(dst.id)
+                dst._rollup_move_origs(seen)
+        return seen
+
     def write(self, vals):
         if "restrict_lot_id" not in vals:
             return super().write(vals)
         else:
             restrict_lot_id = vals.pop("restrict_lot_id")
             restrict_lot = self.env["stock.lot"].browse(restrict_lot_id)
-            chained_moves = OrderedSet()
+            chained_moves = OrderedSet(self)
             self._rollup_move_dests(chained_moves)
-            self._rollup_move_origs(chained_moves)
+            self._rollup_not_cancelled_move_origs(chained_moves)
             if any(
                 [
                     sm.state == "done" and sm.lot_ids and sm.lot_ids != restrict_lot
