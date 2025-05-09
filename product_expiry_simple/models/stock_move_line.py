@@ -10,9 +10,10 @@ class StockMoveLine(models.Model):
     _inherit = "stock.move.line"
 
     expiry_date = fields.Date(string="Expiry Date")
+    use_expiry_date = fields.Boolean(related="product_id.use_expiry_date")
 
     # When you read the code of _create_and_assign_production_lot()
-    # you need the defects of that method:
+    # you see the problems of that method:
     # 1. it's not possible to inherit the creation of the lot
     # 2. it creates one lot per company/product/lot_name
     # On that second point, we can consider that, for a particular product,
@@ -20,5 +21,5 @@ class StockMoveLine(models.Model):
 
     def _assign_production_lot(self, lot):
         super()._assign_production_lot(lot)
-        if self[0].expiry_date:
+        if self[0].expiry_date and self[0].product_id.use_expiry_date:
             self.lot_id.write({"expiry_date": self[0].expiry_date})

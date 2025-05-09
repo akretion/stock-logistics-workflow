@@ -18,6 +18,7 @@
     "excludes": ["product_expiry"],
     "data": [
         "data/product_removal.xml",
+        "views/product_template.xml",
         "views/stock_production_lot.xml",
         "views/stock_quant.xml",
         "views/stock_move_line.xml",
