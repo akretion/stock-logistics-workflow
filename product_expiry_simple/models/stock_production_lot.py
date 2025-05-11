@@ -72,7 +72,7 @@ class StockProductionLot(models.Model):
                 if lot.expiry_date < today:
                     dname = f"[{expiry_date_print} ⚠] {dname}"
                 else:
-                    dname = "[%s] %s" % (expiry_date_print, dname)
+                    dname = f"[{expiry_date_print}] {dname}"
             res.append((lot.id, dname))
         return res
 
