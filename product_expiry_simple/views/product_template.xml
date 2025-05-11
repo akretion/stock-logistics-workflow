@@ -15,6 +15,16 @@
                     name="use_expiry_date"
                     attrs="{'invisible': [('tracking', 'not in', ('lot', 'serial'))]}"
                 />
+                <label
+                    for="default_expiry_delay"
+                    attrs="{'invisible': [('use_expiry_date', '=', False)]}"
+                />
+                <div
+                    name="default_expiry_delay"
+                    attrs="{'invisible': [('use_expiry_date', '=', False)]}"
+                >
+                        <field name="default_expiry_delay" class="oe_inline" /> days
+                </div>
             </group>
         </field>
     </record>

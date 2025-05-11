@@ -3,6 +3,8 @@
 # @author: Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+from datetime import timedelta
+
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.misc import format_date
@@ -72,4 +74,19 @@ class StockProductionLot(models.Model):
                 else:
                     dname = "[%s] %s" % (expiry_date_print, dname)
             res.append((lot.id, dname))
+        return res
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        if res.get("product_id"):
+            product = self.env["product.product"].browse(res["product_id"])
+            if (
+                product.tracking in ("lot", "serial")
+                and product.use_expiry_date
+                and product.default_expiry_delay > 0
+            ):
+                res["expiry_date"] = fields.Date.context_today(self) + timedelta(
+                    product.default_expiry_delay
+                )
         return res
