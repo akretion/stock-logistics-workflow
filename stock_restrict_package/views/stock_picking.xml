@@ -6,14 +6,14 @@
             <field name="inherit_id" ref="stock.view_picking_form" />
             <field name="arch" type="xml">
                 <xpath
-                expr="//field[@name='move_ids_without_package']/tree/field[@name='product_id']"
+                expr="//field[@name='move_ids_without_package']/list/field[@name='product_id']"
                 position="after"
             >
                     <field
-                    name="restrict_lot_id"
+                    name="restrict_package_id"
                     readonly="1"
-                    optional="show"
-                    groups="stock.group_production_lot"
+                    optional="hide"
+                    groups="stock.group_tracking_lot"
                 />
                 </xpath>
             </field>
@@ -25,9 +25,9 @@
             <field name="arch" type="xml">
                 <field name="product_id" position="after">
                     <field
-                    name="restrict_lot_id"
+                    name="restrict_package_id"
                     string="Lot"
-                    groups="stock.group_production_lot"
+                    groups="stock.group_tracking_lot"
                 />
                 </field>
             </field>

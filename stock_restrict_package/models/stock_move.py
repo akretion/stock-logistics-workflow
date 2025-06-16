@@ -66,7 +66,6 @@ class StockMove(models.Model):
     def _update_reserved_quantity(
         self,
         need,
-        available_quantity,
         location_id,
         lot_id=None,
         package_id=None,
@@ -78,7 +77,6 @@ class StockMove(models.Model):
             package_id = self.restrict_package_id
         return super()._update_reserved_quantity(
             need,
-            available_quantity,
             location_id,
             lot_id=lot_id,
             package_id=package_id,
@@ -109,7 +107,7 @@ class StockMove(models.Model):
             if move.restrict_package_id != move_line_package:
                 raise UserError(
                     _(
-                        "The package(s) %(move_line_lot)s being moved is "
+                        "The package(s) %(move_line_package)s being moved is "
                         "inconsistent with the restriction on "
                         "lot %(move_restrict_package)s set on the move",
                         move_line_package=", ".join(
