@@ -9,3 +9,6 @@ class StockPicking(models.Model):
     id_3pl = fields.Char(
         help="3PL reference id once exported if any",
     )
+
+    def _add_delivery_cost_to_so(self):
+        pass  # with the API we don't want to alter the SO

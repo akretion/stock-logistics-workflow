@@ -18,3 +18,6 @@ class PickingInfo(Datamodel):
     moves = NestedModel("move.info", many=True)
     backorder_id = fields.Integer(required=False)
     backorder_ids = fields.List(fields.Integer())
+    carrier_code = fields.String(required=False)
+    pickup_code = fields.String(required=False)
+    customer_order_ref = fields.String(required=False)

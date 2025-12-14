@@ -11,7 +11,7 @@
     "website": "https://github.com/OCA/l10n-brazil",
     "maintainers": ["rvalyi"],
     "depends": [
-        "delivery",
+        "delivery_carrier_info",
         "base_rest",
         "base_rest_datamodel",
         "auth_api_key",

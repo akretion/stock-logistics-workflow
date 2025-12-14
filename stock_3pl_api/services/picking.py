@@ -122,6 +122,11 @@ class PickingService(Component):
                         _("Move %s doesn't belong to picking %s!")
                         % (move_update_param.id, _id)
                     )
+                move = self.env["stock.move"].browse(move_update_param.id)
+                # we unlink move_line_ids in a previous loop to deal with
+                # potential stock.move id repetition
+                move.move_line_ids.unlink()
+            for move_update_param in picking_update_param.moves:
                 self._update_move(move_update_param)
         write_dict = self._prepare_picking_write(picking_update_param)
         if write_dict:
@@ -137,8 +142,7 @@ class PickingService(Component):
 
     def _update_move(self, move_update_param):
         move = self.env["stock.move"].browse(move_update_param.id)
-        move.move_line_ids.unlink()
-
+#        move.move_line_ids.unlink()
         # moves with stock.move.line details
         if move_update_param.lines:
             for line_param in move_update_param.lines:
@@ -246,7 +250,16 @@ class PickingService(Component):
         ]
         if picking.backorder_id:
             picking_info.backorder_id = picking.backorder_id.id
+        if picking.sale_id:
+            if picking.sale_id.x_carrier_pickup:
+                picking_info.pickup_code = picking.sale_id.x_carrier_pickup
+            if picking.sale_id.client_order_ref:
+                picking_info.customer_order_ref = picking.sale_id.client_order_ref
         picking_info.backorder_ids = picking.backorder_ids.mapped("id")
+        if picking.carrier_id:
+            picking_info.carrier_code = (
+                picking.carrier_id.code or picking.carrier_id.name
+            )
         return picking_info
 
     def _to_partner_info(self, partner):
