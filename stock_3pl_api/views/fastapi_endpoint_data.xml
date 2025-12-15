@@ -1,0 +1,9 @@
+<odoo>
+    <record id="fastapi_endpoint_stock_3pl" model="fastapi.endpoint">
+        <field name="name">Stock 3PL API</field>
+        <field name="app">stock_3pl</field>
+        <field name="root_path">/stock-3pl-api</field>
+        <field name="user_id" ref="base.user_admin" />
+        <!-- Configure appropriate user -->
+    </record>
+</odoo>
