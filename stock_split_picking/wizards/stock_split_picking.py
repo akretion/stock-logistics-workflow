@@ -101,7 +101,22 @@ class StockSplitPicking(models.TransientModel):
         )
 
     def _picking_action(self, pickings):
-        return pickings.get_formview_action() if len(pickings) == 1 else False
+        if len(pickings) == 1:
+            pickings.get_formview_action()
+        elif len(pickings) > 1:
+            action = self.env["ir.actions.actions"]._for_xml_id(
+                "stock.action_picking_tree_all"
+            )
+            action.update(
+                {
+                    "domain": [("id", "in", pickings.ids)],
+                    "name": "Transferts",
+                    "target": "current",
+                }
+            )
+            return action
+        else:
+            return False
 
 
 class StockSplitProductQuantities(models.TransientModel):
