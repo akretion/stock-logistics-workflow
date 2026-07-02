@@ -16,7 +16,7 @@ from ..schemas import (
     ProductUpdateParam,
 )
 
-router = APIRouter(prefix="/stock-3pl-api", tags=["stock_3pl"])
+router = APIRouter(prefix="", tags=["stock_3pl"])
 
 # --- HELPERS TO MAP ODOO OBJECTS TO PYDANTIC ---
 
