@@ -11,7 +11,7 @@ class PartnerInfo(BaseModel):
     email: str | None = ""
     street: str | None = ""
     street2: str | None = ""
-    zip_code: str | None = Field(alias="zip", default="")
+    zip_code: str | None = ""
     city: str | None = ""
     phone: str | None = ""
     mobile: str | None = ""
