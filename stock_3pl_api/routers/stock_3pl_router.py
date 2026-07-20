@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from odoo import _
+from odoo import Command, _
 from odoo.api import Environment
 from odoo.models import expression
 
@@ -72,7 +72,7 @@ def _to_picking_info(picking):
             "email": p.email or "",
             "street": p.street or "",
             "street2": p.street2 or "",
-            "zip": p.zip or "",
+            "zip_code": p.zip or "",  # zip_code for backward compat
             "city": p.city or "",
             "phone": p.phone or "",
             "mobile": p.mobile or "",
@@ -298,7 +298,22 @@ def done_picking(
             for line in move.move_line_ids:
                 line.quantity = line.quantity_product_uom
 
-    picking.button_validate()
+    # Handle wizards that intercept validation (stock_sms, backorder).
+    # Loop because one wizard may return another (SMS wizard → backorder wizard).
+    result = picking.button_validate()
+    while isinstance(result, dict) and result.get("res_model"):
+        wizard_model = env[result["res_model"]]
+        wizard = wizard_model.with_context(**result.get("context", {})).create(
+            {"pick_ids": [Command.set(picking.ids)]}
+        )
+        if hasattr(wizard, "dont_send_sms"):
+            result = wizard.dont_send_sms()
+        elif params.cancel_backorder and hasattr(wizard, "process_cancel_backorder"):
+            result = wizard.process_cancel_backorder()
+        elif hasattr(wizard, "process"):
+            result = wizard.process()
+        else:
+            break
 
     if params.cancel_backorder:
         backorders = env["stock.picking"].search([("backorder_id", "=", picking.id)])

@@ -44,6 +44,11 @@ class TestStock3PLApi(FastAPITransactionCase):
         )
         cls.picking.action_confirm()
 
+        # Add stock so action_assign can reserve
+        cls.env["stock.quant"]._update_available_quantity(
+            cls.product, cls.stock_location, 10.0
+        )
+
         # API Key Setup
         cls.api_key_str = "TEST_API_KEY_123"
         cls.env["auth.api.key"].create(
