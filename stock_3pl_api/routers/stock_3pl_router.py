@@ -204,63 +204,71 @@ def update_picking(
 
     if params.moves:
         allowed_move_ids = picking.move_ids_without_package.ids
+        # Spidy sends one entry PER PACKAGE, repeating the same move id for
+        # multi-package shipments. Group entries by move id first, so we
+        # unlink move lines ONCE per move (otherwise each package entry would
+        # delete the move lines created by the previous entry).
+        entries_per_move = {}
         for move_data in params.moves:
             if move_data.id not in allowed_move_ids:
                 raise HTTPException(
                     400, f"Move {move_data.id} doesn't belong to picking {id}"
                 )
+            entries_per_move.setdefault(move_data.id, []).append(move_data)
 
-            move = env["stock.move"].browse(move_data.id)
+        for move_id, move_entries in entries_per_move.items():
+            move = env["stock.move"].browse(move_id)
             move.move_line_ids.unlink()
 
-            if move_data.lines:
-                for line_data in move_data.lines:
-                    package_id = False
-                    if line_data.package:
-                        package = env["stock.quant.package"].search(
-                            [("name", "=", line_data.package.ref)], limit=1
-                        )
-                        if package:
-                            package.write(
-                                {
-                                    "shipping_weight": line_data.package.weight,
-                                    "tracking_url": line_data.package.tracking_url,
-                                }
+            for move_data in move_entries:
+                if move_data.lines:
+                    for line_data in move_data.lines:
+                        package_id = False
+                        if line_data.package:
+                            package = env["stock.quant.package"].search(
+                                [("name", "=", line_data.package.ref)], limit=1
                             )
-                        else:
-                            package = env["stock.quant.package"].create(
-                                {
-                                    "name": line_data.package.ref,
-                                    "shipping_weight": line_data.package.weight,
-                                    "tracking_url": line_data.package.tracking_url,
-                                }
-                            )
-                        package_id = package.id
+                            if package:
+                                package.write(
+                                    {
+                                        "shipping_weight": line_data.package.weight,
+                                        "tracking_url": line_data.package.tracking_url,
+                                    }
+                                )
+                            else:
+                                package = env["stock.quant.package"].create(
+                                    {
+                                        "name": line_data.package.ref,
+                                        "shipping_weight": line_data.package.weight,
+                                        "tracking_url": line_data.package.tracking_url,
+                                    }
+                                )
+                            package_id = package.id
 
+                        env["stock.move.line"].create(
+                            {
+                                "move_id": move.id,
+                                "picking_id": picking.id,
+                                "product_id": move.product_id.id,
+                                "quantity": line_data.quantity,
+                                "product_uom_id": move.product_uom.id,
+                                "location_id": move.location_id.id,
+                                "location_dest_id": move.location_dest_id.id,
+                                "result_package_id": package_id,
+                            }
+                        )
+                elif move_data.quantity_done is not None:
                     env["stock.move.line"].create(
                         {
                             "move_id": move.id,
                             "picking_id": picking.id,
                             "product_id": move.product_id.id,
-                            "quantity": line_data.quantity,
+                            "quantity": move_data.quantity_done,
                             "product_uom_id": move.product_uom.id,
                             "location_id": move.location_id.id,
                             "location_dest_id": move.location_dest_id.id,
-                            "result_package_id": package_id,
                         }
                     )
-            elif move_data.quantity_done is not None:
-                env["stock.move.line"].create(
-                    {
-                        "move_id": move.id,
-                        "picking_id": picking.id,
-                        "product_id": move.product_id.id,
-                        "quantity": move_data.quantity_done,
-                        "product_uom_id": move.product_uom.id,
-                        "location_id": move.location_id.id,
-                        "location_dest_id": move.location_dest_id.id,
-                    }
-                )
 
     vals = {}
     if params.scheduled_date:
