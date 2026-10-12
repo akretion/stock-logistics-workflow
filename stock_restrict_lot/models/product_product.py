@@ -12,7 +12,7 @@ class ProductProduct(models.Model):
     def _get_domain_locations(self):
         res = super()._get_domain_locations()
         lot_id = self.env.context.get("lot_id")
-        if not lot_id:
+        if lot_id is None:
             return res
 
         domain_quant_loc, domain_move_in_loc, domain_move_out_loc = res
