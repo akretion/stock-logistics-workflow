@@ -14,14 +14,14 @@ class TestStockSplitPicking(TestStockSplitPickingCase):
         self.assertEqual(self.picking.state, "draft")
         # We can't split a draft picking
         with self.assertRaisesRegex(UserError, "Nothing to split. Fill the quantities"):
-            self._split_picking(self.picking, mode="quantity")
+            self._split_picking(self.picking, mode="reserved_quantity")
 
     def test_stock_split_picking_without_quantities(self):
         # Picking state is draft
         self.picking.action_confirm()
         # We can't split a draft picking
         with self.assertRaisesRegex(UserError, "Nothing to split. Fill the quantities"):
-            self._split_picking(self.picking, mode="quantity")
+            self._split_picking(self.picking, mode="reserved_quantity")
 
     def test_stock_split_picking_with_nothing_left_to_split(self):
         # Confirm picking
@@ -30,7 +30,7 @@ class TestStockSplitPicking(TestStockSplitPickingCase):
             move.quantity = move.product_uom_qty
         # We can't split a draft picking
         with self.assertRaisesRegex(UserError, "Nothing to split, all demand is done."):
-            self._split_picking(self.picking, mode="quantity")
+            self._split_picking(self.picking, mode="reserved_quantity")
 
     def test_stock_split_picking_consumable(self):
         # Confirm picking
@@ -44,7 +44,7 @@ class TestStockSplitPicking(TestStockSplitPickingCase):
             RecordCapturer(self.env["stock.picking"], []) as rc_picking,
             RecordCapturer(self.env["stock.move"], []) as rc_move,
         ):
-            self._split_picking(self.picking_consu, mode="quantity")
+            self._split_picking(self.picking_consu, mode="reserved_quantity")
             new_picking = rc_picking.records
             new_moves = rc_move.records
 
@@ -96,7 +96,7 @@ class TestStockSplitPicking(TestStockSplitPickingCase):
             RecordCapturer(self.env["stock.picking"], []) as rc_picking,
             RecordCapturer(self.env["stock.move"], []) as rc_move,
         ):
-            self._split_picking(self.picking, mode="quantity")
+            self._split_picking(self.picking, mode="reserved_quantity")
             new_picking = rc_picking.records
             new_moves = rc_move.records
 
@@ -161,7 +161,7 @@ class TestStockSplitPicking(TestStockSplitPickingCase):
             RecordCapturer(self.env["stock.picking"], []) as rc_picking,
             RecordCapturer(self.env["stock.move"], []) as rc_move,
         ):
-            self._split_picking(self.picking, mode="quantity")
+            self._split_picking(self.picking, mode="reserved_quantity")
             new_picking = rc_picking.records
             new_moves = rc_move.records
 
@@ -213,7 +213,7 @@ class TestStockSplitPicking(TestStockSplitPickingCase):
             RecordCapturer(self.env["stock.picking"], []) as rc_picking,
             RecordCapturer(self.env["stock.move"], []) as rc_move,
         ):
-            self._split_picking(self.picking_consu, mode="quantity")
+            self._split_picking(self.picking_consu, mode="reserved_quantity")
             new_picking = rc_picking.records
             new_moves = rc_move.records
 
@@ -255,7 +255,7 @@ class TestStockSplitPicking(TestStockSplitPickingCase):
             RecordCapturer(self.env["stock.picking"], []) as rc_picking,
             RecordCapturer(self.env["stock.move"], []) as rc_move,
         ):
-            self._split_picking(self.picking, mode="quantity")
+            self._split_picking(self.picking, mode="reserved_quantity")
             new_picking = rc_picking.records
             new_moves = rc_move.records
 
@@ -409,3 +409,113 @@ class TestStockSplitPicking(TestStockSplitPickingCase):
             # fails because we can't split cancelled pickings
             self.picking.action_cancel()
             self.picking._split_off_moves(self.picking.move_ids)
+
+    # ------------------------------------------------------------------
+    # Mode: manual quantities
+    # ------------------------------------------------------------------
+    def test_stock_split_picking_manual_quantity(self):
+        """The quantity entered manually is extracted in a new picking, the
+        rest of the demand stays in the original picking."""
+        self.picking.action_confirm()
+        self.move.split_manual_quantity = 4.0
+
+        with RecordCapturer(self.env["stock.picking"], []) as rc_picking:
+            self._split_picking(self.picking, mode="manual_quantity")
+            new_picking = rc_picking.records
+
+        self.assertEqual(len(new_picking), 1)
+        new_move = new_picking.move_ids
+        self.assertEqual(len(new_move), 1)
+        self.assertAlmostEqual(new_move.product_uom_qty, 4.0)
+        # the quantity to split is not copied on the extracted move
+        self.assertAlmostEqual(new_move.split_manual_quantity, 0.0)
+        self.assertEqual(new_move.picking_id, new_picking)
+        # the rest of the demand stays in the original move
+        self.assertAlmostEqual(self.move.product_uom_qty, 6.0)
+        self.assertEqual(self.move.picking_id, self.picking)
+        # the moves without a quantity to split are not touched
+        self.assertAlmostEqual(self.move_2.product_uom_qty, 10.0)
+        self.assertEqual(self.move_2.picking_id, self.picking)
+
+    def test_stock_split_picking_manual_quantity_whole_move(self):
+        """A quantity to split which covers the demand extracts the whole
+        move."""
+        self.picking.action_confirm()
+        self.move.split_manual_quantity = 10.0
+
+        with RecordCapturer(self.env["stock.picking"], []) as rc_picking:
+            self._split_picking(self.picking, mode="manual_quantity")
+            new_picking = rc_picking.records
+
+        self.assertEqual(len(new_picking), 1)
+        self.assertEqual(new_picking.move_ids, self.move)
+        self.assertAlmostEqual(self.move.product_uom_qty, 10.0)
+        self.assertEqual(self.move_2.picking_id, self.picking)
+
+    def test_stock_split_picking_manual_quantity_nothing_filled(self):
+        self.picking.action_confirm()
+        with self.assertRaisesRegex(
+            UserError, "Nothing to split. Fill the quantities to split"
+        ):
+            self._split_picking(self.picking, mode="manual_quantity")
+
+    def test_stock_split_picking_manual_quantity_negative(self):
+        self.picking.action_confirm()
+        self.move.split_manual_quantity = -2.0
+        with self.assertRaisesRegex(UserError, "cannot be negative"):
+            self._split_picking(self.picking, mode="manual_quantity")
+
+    def test_stock_split_picking_manual_quantity_reserved(self):
+        """On a reserved picking, the extracted quantity is reserved and the
+        reservation left on the original picking does not exceed its remaining
+        demand."""
+        picking = self._create_picking()
+        move = self._create_stock_move(self.product, picking)
+        self.env["stock.quant"]._update_available_quantity(
+            self.product, self.src_location, 10.0
+        )
+        picking.action_confirm()
+        picking.action_assign()
+        self.assertEqual(picking.state, "assigned")
+        self.assertAlmostEqual(move.quantity, 10.0)
+        move.split_manual_quantity = 4.0
+
+        with RecordCapturer(self.env["stock.picking"], []) as rc_picking:
+            self._split_picking(picking, mode="manual_quantity")
+            new_picking = rc_picking.records
+
+        self.assertEqual(len(new_picking), 1)
+        new_move = new_picking.move_ids
+        self.assertAlmostEqual(new_move.product_uom_qty, 4.0)
+        self.assertAlmostEqual(new_move.quantity, 4.0)
+        self.assertEqual(new_picking.state, "assigned")
+        # the remaining demand of the original move is not over-reserved
+        self.assertAlmostEqual(move.product_uom_qty, 6.0)
+        self.assertAlmostEqual(move.quantity, 0.0)
+
+    def test_stock_split_picking_manual_quantity_equals_reservation(self):
+        """When the quantity to split is exactly the reserved quantity, the
+        reservation goes with the extracted move."""
+        picking = self._create_picking()
+        picking.picking_type_id.reservation_method = "manual"
+        move = self._create_stock_move(self.product, picking)
+        self.env["stock.quant"]._update_available_quantity(
+            self.product, self.src_location, 4.0
+        )
+        picking.action_confirm()
+        picking.action_assign()
+        self.assertAlmostEqual(move.quantity, 4.0)
+        move.split_manual_quantity = 4.0
+
+        with RecordCapturer(self.env["stock.picking"], []) as rc_picking:
+            self._split_picking(picking, mode="manual_quantity")
+            new_picking = rc_picking.records
+
+        self.assertEqual(len(new_picking), 1)
+        new_move = new_picking.move_ids
+        self.assertAlmostEqual(new_move.product_uom_qty, 4.0)
+        self.assertAlmostEqual(new_move.quantity, 4.0)
+        self.assertEqual(new_move.state, "assigned")
+        self.assertEqual(new_picking.state, "assigned")
+        self.assertAlmostEqual(move.product_uom_qty, 6.0)
+        self.assertAlmostEqual(move.quantity, 0.0)

@@ -6,6 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-02 16:13+0000\n"
+"PO-Revision-Date: 2026-11-02 16:13+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,9 +18,23 @@ msgstr ""
 #. module: stock_split_picking
 #. odoo-python
 #: code:addons/stock_split_picking/wizards/stock_split_picking.py:0
+msgid "%(move)s: The quantity to split cannot be negative."
+msgstr ""
+
+#. module: stock_split_picking
+#. odoo-python
+#: code:addons/stock_split_picking/wizards/stock_split_picking.py:0
 msgid ""
 "%s: Nothing to split, all demand is done. For split you need at least one "
 "line not fully fulfilled"
+msgstr ""
+
+#. module: stock_split_picking
+#. odoo-python
+#: code:addons/stock_split_picking/wizards/stock_split_picking.py:0
+msgid ""
+"%s: Nothing to split. Fill the quantities to split in the 'Quantity to "
+"Split' column of the operations."
 msgstr ""
 
 #. module: stock_split_picking
@@ -67,6 +83,14 @@ msgid "Display Name"
 msgstr ""
 
 #. module: stock_split_picking
+#: model_terms:ir.ui.view,arch_db:stock_split_picking.view_stock_split_picking
+msgid ""
+"Fill the quantities to split in the column\n"
+"                        <strong>Quantity to Split</strong>\n"
+"                        of the operations of the picking before splitting."
+msgstr ""
+
+#. module: stock_split_picking
 #: model:ir.model.fields,field_description:stock_split_picking.field_stock_split_picking__id
 msgid "ID"
 msgstr ""
@@ -79,6 +103,11 @@ msgstr ""
 #. module: stock_split_picking
 #: model:ir.model.fields,field_description:stock_split_picking.field_stock_split_picking__write_date
 msgid "Last Updated on"
+msgstr ""
+
+#. module: stock_split_picking
+#: model:ir.model.fields.selection,name:stock_split_picking.selection__stock_split_picking__mode__manual_quantity
+msgid "Manual quantities"
 msgstr ""
 
 #. module: stock_split_picking
@@ -102,8 +131,21 @@ msgid "Picking"
 msgstr ""
 
 #. module: stock_split_picking
-#: model:ir.model.fields.selection,name:stock_split_picking.selection__stock_split_picking__mode__quantity
-msgid "Quantities"
+#: model:ir.model.fields,help:stock_split_picking.field_stock_move__split_manual_quantity
+msgid ""
+"Quantity of this move to extract in a new transfer when the picking is split"
+" with the mode 'Manual quantities'. The rest of the demand stays in the "
+"original transfer."
+msgstr ""
+
+#. module: stock_split_picking
+#: model:ir.model.fields,field_description:stock_split_picking.field_stock_move__split_manual_quantity
+msgid "Quantity to Split"
+msgstr ""
+
+#. module: stock_split_picking
+#: model:ir.model.fields.selection,name:stock_split_picking.selection__stock_split_picking__mode__reserved_quantity
+msgid "Reserved quantities"
 msgstr ""
 
 #. module: stock_split_picking
@@ -131,6 +173,11 @@ msgstr ""
 #. module: stock_split_picking
 #: model:ir.actions.act_window,name:stock_split_picking.action_stock_split_picking
 msgid "Split pickings"
+msgstr ""
+
+#. module: stock_split_picking
+#: model:ir.model,name:stock_split_picking.model_stock_move
+msgid "Stock Move"
 msgstr ""
 
 #. module: stock_split_picking

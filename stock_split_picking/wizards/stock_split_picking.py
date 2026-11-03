@@ -12,12 +12,13 @@ class StockSplitPicking(models.TransientModel):
 
     mode = fields.Selection(
         [
-            ("quantity", "Quantities"),
+            ("reserved_quantity", "Reserved quantities"),
             ("move", "One picking per move"),
             ("selection", "Select move lines to split off"),
+            ("manual_quantity", "Manual quantities"),
         ],
         required=True,
-        default="quantity",
+        default="reserved_quantity",
     )
 
     picking_ids = fields.Many2many(
@@ -66,8 +67,46 @@ class StockSplitPicking(models.TransientModel):
                     )
                 )
 
-    def _apply_quantity(self):
-        """Apply mode `quantity`: Split pickings by quantity
+    def _check_can_split_manual_quantity(self):
+        """Check that a quantity to split has been entered on the moves."""
+        for picking in self.picking_ids:
+            moves = picking.move_ids.filtered(
+                lambda move: move.state not in ("done", "cancel")
+            )
+            for move in moves:
+                if (
+                    float_compare(
+                        move.split_manual_quantity,
+                        0.0,
+                        precision_rounding=move.product_uom.rounding,
+                    )
+                    < 0
+                ):
+                    raise UserError(
+                        self.env._(
+                            "%(move)s: The quantity to split cannot be negative.",
+                            move=move.display_name,
+                        )
+                    )
+            if not any(
+                float_compare(
+                    move.split_manual_quantity,
+                    0.0,
+                    precision_rounding=move.product_uom.rounding,
+                )
+                > 0
+                for move in moves
+            ):
+                raise UserError(
+                    self.env._(
+                        "%s: Nothing to split. Fill the quantities to split in "
+                        "the 'Quantity to Split' column of the operations.",
+                        picking.display_name,
+                    )
+                )
+
+    def _apply_reserved_quantity(self):
+        """Apply mode `reserved_quantity`: Split pickings by reserved quantity
 
         Done quantities will be moved to a new picking, the remaining pending
         moves will stay in the original picking.
@@ -159,6 +198,106 @@ class StockSplitPicking(models.TransientModel):
         moves = self.mapped("move_ids")
         new_picking = moves.mapped("picking_id")._split_off_moves(moves)
         return new_picking
+
+    def _apply_manual_quantity(self):
+        """Apply mode `manual_quantity`: Split pickings by manual quantity
+
+        The quantity entered on each move in the field `split_manual_quantity`
+        is extracted in a new picking, the rest of the demand stays in the
+        original picking. This is the same mechanism as the
+        `reserved_quantity` mode, except that the quantity to extract is the
+        one typed by the user instead of the reserved quantity.
+
+        The reservation follows the extracted quantity only when it is exactly
+        the reserved quantity of the move. Otherwise the reservation of the
+        move left in the original picking is released when it exceeds the
+        remaining demand, and the new picking is reserved again: both pickings
+        stay consistent and can be processed.
+        """
+        self._check_can_split_manual_quantity()
+        new_pickings = self.env["stock.picking"]
+        for picking in self.picking_ids:
+            new_moves_vals = []
+            moves_to_split_off = self.env["stock.move"]
+            moves_to_recompute_state = self.env["stock.move"]
+            for move in picking.move_ids:
+                rounding = move.product_uom.rounding
+                # Do not split moves that are done or cancelled
+                if move.state in ("done", "cancel"):
+                    continue
+                manual_qty = move.split_manual_quantity
+                if float_is_zero(manual_qty, precision_rounding=rounding):
+                    continue
+                # If the quantity to split covers the whole demand, extract the
+                # move entirely
+                if (
+                    float_compare(
+                        manual_qty,
+                        move.product_uom_qty,
+                        precision_rounding=rounding,
+                    )
+                    >= 0
+                ):
+                    moves_to_split_off += move
+                    continue
+                # Otherwise, extract the quantity to split in a new move and
+                # leave the remaining demand in the original move
+                split_moves_vals = move.with_context(cancel_backorder=False)._split(
+                    move.product_uom._compute_quantity(
+                        manual_qty,
+                        move.product_id.uom_id,
+                        rounding_method="HALF-UP",
+                    )
+                )
+                if not split_moves_vals:
+                    continue  # pragma: no cover
+                # The reservation goes with the extracted move only when the
+                # quantity to split is exactly the reserved quantity: the
+                # reserved move lines would not match the extracted demand
+                # otherwise.
+                if not float_compare(
+                    manual_qty, move.quantity, precision_rounding=rounding
+                ):
+                    split_moves_vals[0]["move_line_ids"] = [
+                        Command.set(move.move_line_ids.ids)
+                    ]
+                new_moves_vals += split_moves_vals
+                moves_to_recompute_state += move
+            # Create the partially split off moves
+            if new_moves_vals:
+                new_moves = self.env["stock.move"].create(new_moves_vals)
+                new_moves.with_context(
+                    bypass_entire_pack=True, bypass_procurement_creation=True
+                )._action_confirm(merge=False)
+                # The extracted moves can carry the reservation of the original
+                # moves: recompute their state so that they are 'assigned' as
+                # soon as they are fully reserved (the confirmation of a move
+                # linked to a picking does not reserve anything).
+                new_moves._recompute_state()
+                moves_to_split_off += new_moves
+            # Recompute the state of the remaining moves
+            moves_to_recompute_state._recompute_state()
+            # If all the picking moves are the ones to be split, then it means
+            # we haven't created any backorder move. We keep the picking as-is.
+            if picking.move_ids == moves_to_split_off or not moves_to_split_off:
+                continue
+            new_picking = picking._split_off_moves(moves_to_split_off)
+            new_pickings += new_picking
+            # The moves left in the original picking can keep a reservation
+            # bigger than their remaining demand: release it, then reserve the
+            # new picking.
+            over_reserved_moves = moves_to_recompute_state.filtered(
+                lambda m: float_compare(
+                    m.quantity,
+                    m.product_uom_qty,
+                    precision_rounding=m.product_uom.rounding,
+                )
+                > 0
+            )
+            if over_reserved_moves:
+                over_reserved_moves._do_unreserve()
+                new_picking.action_assign()
+        return new_pickings
 
     def _picking_action(self, pickings):
         if not pickings:

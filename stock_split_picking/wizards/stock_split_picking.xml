@@ -7,6 +7,15 @@
             <form>
                 <group>
                     <field name="mode" widget="radio" />
+                    <div
+                        colspan="2"
+                        class="text-muted"
+                        invisible="mode != 'manual_quantity'"
+                    >
+                        Fill the quantities to split in the column
+                        <strong>Quantity to Split</strong>
+                        of the operations of the picking before splitting.
+                    </div>
                     <field name="picking_ids" invisible="True" />
                     <field
                         name="move_ids"
