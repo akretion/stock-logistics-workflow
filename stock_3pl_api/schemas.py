@@ -1,6 +1,6 @@
 from datetime import date
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 # --- Helper Models ---
 
@@ -11,7 +11,11 @@ class PartnerInfo(BaseModel):
     email: str | None = ""
     street: str | None = ""
     street2: str | None = ""
-    zip_code: str | None = Field(alias="zip", default="")
+    # No alias: PartnerInfo is a RESPONSE model, and FastAPI serializes it with
+    # by_alias=True, so alias="zip" renamed the key the WMS reads. The router
+    # already fills the dict with "zip_code", and the partner payload is what
+    # Spidy consumes — keep the wire key "zip_code".
+    zip_code: str | None = ""
     city: str | None = ""
     phone: str | None = ""
     mobile: str | None = ""
